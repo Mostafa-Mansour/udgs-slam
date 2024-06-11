@@ -252,6 +252,13 @@ class MonocularDataset(BaseDataset):
             },
         }
 
+    def _get_neural_depth(self, color_path):
+        ## extracting timestamp from image file
+        suffex = color_path.split('/')[-1]
+        time_stamp = suffex.split('.')[0] + '.' + suffex.split('.')[1] + "_depth.npy"
+        depth_path = os.path.join("/home/mostafa/codes/Depth-Anything/metric_depth/my_test/output", time_stamp)
+        return np.load(depth_path)
+    
     def __getitem__(self, idx):
         color_path = self.color_paths[idx]
         pose = self.poses[idx]
@@ -273,7 +280,34 @@ class MonocularDataset(BaseDataset):
             .to(device=self.device, dtype=self.dtype)
         )
         pose = torch.from_numpy(pose).to(device=self.device)
-        return image, depth, pose
+        
+        neural_depth = self._get_neural_depth(color_path)
+        neural_depth = neural_depth.astype(np.float64)
+        
+        # Neural network perception should be checked
+        neural_depth = cv2.resize(neural_depth, (640,480), cv2.INTER_AREA)
+        #neural_depth = neural_depth.transpose((1,0))
+        
+        # remove outliers and keep the values within IQR range
+        
+        # Step 1: Flatten the 2D array to a 1D array
+        flattened_array = neural_depth.flatten()
+
+        # Step 2: Calculate the first quartile (Q1) and the third quartile (Q3)
+        Q1 = np.percentile(flattened_array, 25)
+        Q3 = np.percentile(flattened_array, 75)
+
+        # Step 3: Compute the IQR
+        IQR = Q3 - Q1
+
+        # Step 4: Determine the lower bound and upper bound
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Step 5: Replace values outside the IQR range with zero
+        filtered_neural_depth = np.where((neural_depth >= lower_bound) & (neural_depth <= upper_bound), neural_depth, 0)
+
+        return image, depth, pose, filtered_neural_depth
 
 
 class StereoDataset(BaseDataset):

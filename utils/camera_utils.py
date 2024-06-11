@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+import numpy as np
 from gaussian_splatting.utils.graphics_utils import getProjectionMatrix2, getWorld2View2
 from utils.slam_utils import image_gradient, image_gradient_mask
 
@@ -21,7 +21,9 @@ class Camera(nn.Module):
         fovy,
         image_height,
         image_width,
+        neural_depth = None,
         device="cuda:0",
+        
     ):
         super(Camera, self).__init__()
         self.uid = uid
@@ -35,6 +37,7 @@ class Camera(nn.Module):
 
         self.original_image = color
         self.depth = depth
+        self.neural_depth = neural_depth
         self.grad_mask = None
 
         self.fx = fx
@@ -64,7 +67,9 @@ class Camera(nn.Module):
 
     @staticmethod
     def init_from_dataset(dataset, idx, projection_matrix):
-        gt_color, gt_depth, gt_pose = dataset[idx]
+        gt_color, gt_depth, gt_pose, neural_depth = dataset[idx]
+        
+        np.copyto(gt_depth, neural_depth)
         return Camera(
             idx,
             gt_color,
@@ -79,6 +84,7 @@ class Camera(nn.Module):
             dataset.fovy,
             dataset.height,
             dataset.width,
+            neural_depth=neural_depth,
             device=dataset.device,
         )
 

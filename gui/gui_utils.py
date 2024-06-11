@@ -86,6 +86,7 @@ class GaussianPacket:
         keyframes=None,
         finish=False,
         kf_window=None,
+        depth_neural=None,
     ):
         self.has_gaussians = False
         if gaussians is not None:
@@ -107,6 +108,7 @@ class GaussianPacket:
         self.current_frame = current_frame
         self.gtcolor = self.resize_img(gtcolor, 320)
         self.gtdepth = self.resize_img(gtdepth, 320)
+        self.depth_neural = self.resize_img(depth_neural, 320)
         self.gtnormal = self.resize_img(gtnormal, 320)
         self.keyframes = keyframes
         self.finish = finish

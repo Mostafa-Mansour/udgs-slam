@@ -214,9 +214,11 @@ class SLAM_GUI:
 
         self.in_rgb_widget = gui.ImageWidget()
         self.in_depth_widget = gui.ImageWidget()
+        self.in_neural_widget = gui.ImageWidget()
         tab_info.add_child(gui.Label("Input Color/Depth"))
         tab_info.add_child(self.in_rgb_widget)
         tab_info.add_child(self.in_depth_widget)
+        tab_info.add_child(self.in_neural_widget)
 
         tabs.add_tab("Info", tab_info)
         self.panel.add_child(tabs)
@@ -445,6 +447,17 @@ class SLAM_GUI:
             depth = (depth).byte().permute(1, 2, 0).contiguous().cpu().numpy()
             rgb = o3d.geometry.Image(depth)
             self.in_depth_widget.update_image(rgb)
+            
+        if gaussian_packet.depth_neural is not None:
+            depth_neural = gaussian_packet.depth_neural
+            depth_neural = imgviz.depth2rgb(
+                depth_neural, min_value=0.1, max_value=5.0, colormap="jet"
+            )
+            depth_neural = torch.from_numpy(depth_neural)
+            depth_neural = torch.permute(depth, (2, 0, 1)).float()
+            depth_neural = (depth_neural).byte().permute(1, 2, 0).contiguous().cpu().numpy()
+            rgb = o3d.geometry.Image(depth_neural)
+            self.in_neural_widget.update_image(rgb)
 
         if gaussian_packet.finish:
             Log("Received terminate signal", tag="GUI")
