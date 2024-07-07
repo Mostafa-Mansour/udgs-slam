@@ -256,7 +256,7 @@ class MonocularDataset(BaseDataset):
         ## extracting timestamp from image file
         suffex = color_path.split('/')[-1]
         time_stamp = suffex.split('.')[0] + '.' + suffex.split('.')[1] + "_depth.npy"
-        depth_path = os.path.join("/home/mostafa/codes/Depth-Anything/metric_depth/my_test/output", time_stamp)
+        depth_path = os.path.join("/home/mostafa/codes/unidepth/raw_output", time_stamp)
         return np.load(depth_path)
     
     def __getitem__(self, idx):
@@ -285,7 +285,10 @@ class MonocularDataset(BaseDataset):
         neural_depth = neural_depth.astype(np.float64)
         
         # Neural network perception should be checked
-        neural_depth = cv2.resize(neural_depth, (640,480), cv2.INTER_AREA)
+        #print(f"The size of neura_depth is {neural_depth.shape}")
+        #neural_depth = cv2.resize(neural_depth, (640,480), cv2.INTER_AREA)
+        #print(f"The size of neura_depth is {neural_depth.shape}")
+
         #neural_depth = neural_depth.transpose((1,0))
         
         # remove outliers and keep the values within IQR range
@@ -307,7 +310,7 @@ class MonocularDataset(BaseDataset):
         # Step 5: Replace values outside the IQR range with zero
         filtered_neural_depth = np.where((neural_depth >= lower_bound) & (neural_depth <= upper_bound), neural_depth, 0)
 
-        return image, depth, pose, filtered_neural_depth
+        return image, depth, pose, neural_depth #filtered_neural_depth
 
 
 class StereoDataset(BaseDataset):
