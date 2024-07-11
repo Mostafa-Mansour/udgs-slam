@@ -308,9 +308,9 @@ class MonocularDataset(BaseDataset):
         upper_bound = Q3 + 1.5 * IQR
 
         # Step 5: Replace values outside the IQR range with zero
-        filtered_neural_depth = np.where((neural_depth >= lower_bound) & (neural_depth <= upper_bound), neural_depth, 0)
+        filtered_neural_depth = np.where((neural_depth >= lower_bound) & (neural_depth <= upper_bound), neural_depth, np.nan)
 
-        return image, depth, pose, neural_depth #filtered_neural_depth
+        return image, depth, pose, filtered_neural_depth
 
 
 class StereoDataset(BaseDataset):

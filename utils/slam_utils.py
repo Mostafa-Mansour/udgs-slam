@@ -84,7 +84,11 @@ def get_loss_tracking_rgbd(
 
     l1_rgb = get_loss_tracking_rgb(config, image, depth, opacity, viewpoint)
     depth_mask = depth_pixel_mask * opacity_mask
-    l1_depth = torch.abs(depth * depth_mask - gt_depth * depth_mask)
+    diff = depth * depth_mask - gt_depth * depth_mask
+    valid_mask = torch.isnan(diff)
+    if torch.any(valid_mask):
+        diff = diff[valid_mask]
+    l1_depth = torch.abs(diff)
     return alpha * l1_rgb + (1 - alpha) * l1_depth.mean()
 
 
