@@ -80,7 +80,7 @@ class SLAM_GUI:
         self.window_w, self.window_h = 1600, 900
 
         self.window = gui.Application.instance.create_window(
-            "MonoGS", self.window_w, self.window_h
+            "UDGS-SLAM", self.window_w, self.window_h
         )
         self.window.set_on_layout(self._on_layout)
         self.window.set_on_close(self._on_close)
@@ -215,10 +215,10 @@ class SLAM_GUI:
         self.in_rgb_widget = gui.ImageWidget()
         self.in_depth_widget = gui.ImageWidget()
         self.in_neural_widget = gui.ImageWidget()
-        tab_info.add_child(gui.Label("Input Color/Depth"))
+        tab_info.add_child(gui.Label("Input Color/Filtered Neural Depth"))
         tab_info.add_child(self.in_rgb_widget)
         tab_info.add_child(self.in_depth_widget)
-        tab_info.add_child(self.in_neural_widget)
+        #tab_info.add_child(self.in_neural_widget)
 
         tabs.add_tab("Info", tab_info)
         self.panel.add_child(tabs)
@@ -646,8 +646,9 @@ class SLAM_GUI:
                 0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE
             )
             img = np.frombuffer(bufferdata, np.uint8, -1).reshape(height, width, 3)
-            cv2.flip(img, 0, img)
-            render_img = o3d.geometry.Image(img)
+            copied_img = img.copy()
+            cv2.flip(img, 0, copied_img)
+            render_img = o3d.geometry.Image(copied_img)
             glfw.swap_buffers(self.window_gl)
         else:
             rgb = (

@@ -13,4 +13,6 @@ cameras.json
 datasets
 wandb
 
+depth*
 result*
+README_old.md
